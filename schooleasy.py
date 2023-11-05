@@ -17,20 +17,16 @@ def display_window(answer: str) -> None:
   root = tk.Tk()
   root.withdraw()
   
+  tk.Label(popup, text=answer, padx=10, pady=10).pack()
+
   popup = tk.Toplevel(root)
   popup.title("Update")
   popup.overrideredirect(True)
+  popup.attributes("-alpha", float(config["Settings"]["PopOpacity"]))
+  popup.geometry(config["Settings"]["PopPosition"])
+  popup.attributes("-topmost", True)
 
-  tk.Label(popup, text=answer, padx=10, pady=10).pack()
-
-  try:
-    popup.attributes("-alpha", float(config["Settings"]["PopOpacity"]))
-    popup.geometry(config["Settings"]["PopPosition"])
-    popup.attributes("-topmost", True)
-
-    popup.after(int(config["Settings"]["PopTimer"]), lambda: (popup.destroy(), root.quit()))
-  except ValueError as ve:
-    print(f"Error with configuration values: {ve}")
+  popup.after(int(config["Settings"]["PopTimer"]), lambda: (popup.destroy(), root.quit()))
 
   root.mainloop()
 
