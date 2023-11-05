@@ -3,7 +3,6 @@ import keyboard
 import pyperclip
 import configparser
 import tkinter as tk
-from threading import Thread
 
 def load_config(config_file: str) -> configparser.ConfigParser:
   """Load the configuration file."""
@@ -38,6 +37,7 @@ def display_window(answer: str) -> None:
 def generate_response(message: str) -> str:
   """Generate a response for the given message using the OpenAI API."""
   config = load_config('config.cfg')
+
   messages = [
     {"role": "system", "content": config["Settings"]["PromptSystem"]},
     {"role": "user", "content": f'{config["Settings"]["PromptUser"]} {message}'}
@@ -49,24 +49,17 @@ def generate_response(message: str) -> str:
   except Exception as e:
     return f"Error generating response: {e}"
 
-def handle_response(copied_text: str, action: str) -> None:
-  """Generate a response and either type it out or display it."""
-  response = generate_response(copied_text)
-  if action == "write":
-    keyboard.write(response)
-  elif action == "pop":
-    display_window(response)
-
 def on_key_event(e: keyboard.KeyboardEvent) -> None:
   """Handle the key event."""
+  config = load_config('config.cfg')
+  
   if e.event_type == keyboard.KEY_DOWN:
     copied_text = pyperclip.paste()
+    response = generate_response(copied_text)
     if e.name == config["Settings"]["KeyWrite"]:
-      Thread(target=handle_response, args=(copied_text, "write")).start()
-      # handle_response(copied_text, "write")
+      keyboard.write(response)
     elif e.name == config["Settings"]["KeyPop"]:
-      Thread(target=handle_response, args=(copied_text, "pop")).start()
-      # handle_response(copied_text, "pop")
+      display_window(response)
 
 if __name__ == "__main__":
   config = load_config('config.cfg')
