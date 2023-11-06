@@ -107,7 +107,7 @@ def setup_config_folder() -> None:
   urllib.request.urlretrieve(url, practice_cfg_path)
 
   # Create desktop shortcut
-  shortcut = win32com.client.Dispatch("WScript.Shell").CreateShortcut(str(Path(paths["Desktop"], "Poro Setup.lnk")))
+  shortcut = win32com.client.Dispatch("WScript.Shell").CreateShortcut(str(Path(paths["Desktop"], "School Easy.lnk")))
   shortcut.Targetpath = str(practice_cfg_path)
   shortcut.WorkingDirectory = str(setup_path)
   shortcut.IconLocation = str(practice_cfg_path)
