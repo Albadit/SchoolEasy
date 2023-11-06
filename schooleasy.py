@@ -5,13 +5,13 @@ import configparser
 import tkinter as tk
 
 def load_config(config_file: str) -> configparser.ConfigParser:
-  """Load the configuration file."""
+  # Load the configuration file.
   config = configparser.ConfigParser()
   config.read(config_file)
   return config
 
 def display_window(answer: str) -> None:
-  """Display a popup window with the given answer."""
+  # Display a popup window with the given answer.
   config = load_config('config.cfg')
 
   root = tk.Tk()
@@ -31,7 +31,7 @@ def display_window(answer: str) -> None:
   root.mainloop()
 
 def generate_response(message: str) -> str:
-  """Generate a response for the given message using the OpenAI API."""
+  # Generate a response for the given message using the OpenAI API.
   config = load_config('config.cfg')
 
   messages = [
@@ -46,7 +46,7 @@ def generate_response(message: str) -> str:
     return f"Error generating response: {e}"
 
 def on_key_event(e: keyboard.KeyboardEvent) -> None:
-  """Handle the key event."""
+  # Handle the key event.
   config = load_config('config.cfg')
   
   if e.event_type == keyboard.KEY_DOWN:
