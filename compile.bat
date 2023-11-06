@@ -5,7 +5,7 @@ SETLOCAL EnableDelayedExpansion
 SET "currentDir=%~dp0"
 :: Remove the trailing backslash for consistency in path
 SET "currentDir=%currentDir:~0,-1%"
-SET "scriptFileName=schoolEasy"
+SET "scriptFileName=SchoolEasy"
 :: The path of schooleasy.xml
 SET "xmlFile=%currentDir%\task_scheduler\%scriptFileName%.xml"
 

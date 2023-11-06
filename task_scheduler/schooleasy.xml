@@ -54,7 +54,7 @@
   </Settings>
   <Actions Context="Author">
     <Exec>
-      <Command>C:\Users\ardit\Documents\GitHub\SchoolEasy\dist\schoolEasy.exe</Command>
+      <Command>C:\Users\ardit\Documents\GitHub\SchoolEasy\dist\SchoolEasy.exe</Command>
       <Arguments>C:\Users\ardit\Documents\GitHub\SchoolEasy\dist\config.cfg</Arguments>
       <WorkingDirectory>C:\Users\ardit\Documents\GitHub\SchoolEasy\dist</WorkingDirectory>
     </Exec>
