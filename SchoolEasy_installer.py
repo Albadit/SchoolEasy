@@ -56,7 +56,7 @@ def generate_xml_content(setup_path: Path, config_file_path: Path, file_name: st
   # Actions
   actions = SubElement(task, 'Actions', {'Context': 'Author'})
   exec_element = SubElement(actions, 'Exec')
-  SubElement(exec_element, 'Command').text = f'{setup_path}\\schooleasy.exe'
+  SubElement(exec_element, 'Command').text = f'{setup_path}\\SchoolEasy.exe'
   SubElement(exec_element, 'Arguments').text = f'{setup_path}\\config.cfg'
   SubElement(exec_element, 'WorkingDirectory').text = f'{setup_path}'
 
