@@ -5,7 +5,7 @@ SETLOCAL EnableDelayedExpansion
 SET "currentDir=%~dp0"
 :: Remove the trailing backslash for consistency in path
 SET "currentDir=%currentDir:~0,-1%"
-SET "scriptFileName=schooleasy"
+SET "scriptFileName=schoolEasy"
 :: The path of schooleasy.xml
 SET "xmlFile=%currentDir%\task_scheduler\%scriptFileName%.xml"
 
@@ -47,6 +47,7 @@ choice /C YN /M "Press Y to confirm or N to cancel:"
 if %ERRORLEVEL% equ 1 (
   echo Compiling the Python script to .exe...
   pyinstaller --noconfirm --onefile --noconsole --add-data "config.cfg;." --icon=src\app_icon.ico --hidden-import openai --hidden-import keyboard --hidden-import pyperclip %scriptFileName%.py
+  pyinstaller --noconfirm --onefile --icon=src\app_icon.ico %scriptFileName%_installer.py
 
   :: Copy config.conf in the dist
   COPY "%currentDir%\config.cfg" "%newWorkingDirectory%"
