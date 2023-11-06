@@ -24,9 +24,9 @@ def display_window(answer: str) -> None:
   popup.geometry(config["Settings"]["PopPosition"])
   popup.attributes("-topmost", True)
 
-  popup.after(int(config["Settings"]["PopTimer"]), lambda: (popup.destroy(), root.quit()))
-
   tk.Label(popup, text=answer, padx=10, pady=10).pack()
+
+  popup.after(int(config["Settings"]["PopTimer"]), lambda: (popup.destroy(), root.quit()))
 
   root.mainloop()
 
