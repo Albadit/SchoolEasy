@@ -16,8 +16,6 @@ def display_window(answer: str) -> None:
 
   root = tk.Tk()
   root.withdraw()
-  
-  tk.Label(popup, text=answer, padx=10, pady=10).pack()
 
   popup = tk.Toplevel(root)
   popup.title("Update")
@@ -27,6 +25,8 @@ def display_window(answer: str) -> None:
   popup.attributes("-topmost", True)
 
   popup.after(int(config["Settings"]["PopTimer"]), lambda: (popup.destroy(), root.quit()))
+
+  tk.Label(popup, text=answer, padx=10, pady=10).pack()
 
   root.mainloop()
 
