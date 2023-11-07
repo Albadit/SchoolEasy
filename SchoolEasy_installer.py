@@ -89,10 +89,13 @@ def generate_xml(setup_path: Path, file_name: str) -> None:
   print(f'{file_name} has been Generate.')
 
 def download_exe(setup_path: Path) -> None:
-  url = 'https://raw.githubusercontent.com/Albadit/SchoolEasy/main/app/SchoolEasy.exe'
-  cfg_path = Path(setup_path / Path(url).name)
-  urllib.request.urlretrieve(url, cfg_path)
-  print(f'{Path(url).name} has been downloaded.')
+  try:
+    url = 'https://raw.githubusercontent.com/Albadit/SchoolEasy/main/app/SchoolEasy.exe'
+    cfg_path = Path(setup_path / Path(url).name)
+    urllib.request.urlretrieve(url, cfg_path)
+    print(f'{Path(url).name} has been downloaded.')
+  except: 
+    print(f"Error: You can't install or reinstall the .exe file while it is running. Stop the program before installing.")
 
 def create_shortcut(setup_path: Path, cfg_path: Path, shortcut_link: Path) -> None:
   shortcut = win32com.client.Dispatch("WScript.Shell").CreateShortcut(str(shortcut_link))
@@ -153,6 +156,8 @@ def setup_config_folder() -> None:
   
   setup_path = Path(paths["Personal"], 'SchoolEasy')
 
+  install_list = ["Generate config", "Generate xml", "Download exe", "Create shortcut"]
+
   if setup_path.exists():
     context = "The setup path already exists. Do you want to install/reinstall components (y/n): "
     user_input = input(context).strip().lower()
@@ -161,9 +166,9 @@ def setup_config_folder() -> None:
       user_input = input(context).strip().lower()
       if user_input == ['no', 'n']:
         return
-
-  install_list = ["Generate config", "Generate xml", "Download exe", "Create shortcut"]
-  selected_index = parse_selection(install_list)
+    selected_index = parse_selection(install_list)
+  else:
+    selected_index = [int(i + 1) for i in range(len(install_list))]
 
   setup_path.mkdir(parents=True, exist_ok=True)
 
