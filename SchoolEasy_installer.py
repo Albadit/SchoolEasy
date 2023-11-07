@@ -156,7 +156,7 @@ def setup_config_folder() -> None:
     user_input = input(context).strip().lower()
     while user_input not in ['no', 'n' , 'yes', 'y']:
       os.system('cls')
-      user_input = input('Please select this two options (y/n): ').strip().lower()
+      user_input = input(context).strip().lower()
       if user_input == ['no', 'n']:
         return
 
