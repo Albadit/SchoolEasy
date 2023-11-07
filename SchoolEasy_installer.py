@@ -95,7 +95,7 @@ def download_exe(setup_path: Path) -> None:
   print(f'{Path(url).name} has been downloaded.')
 
 def create_shortcut(setup_path: Path, cfg_path: Path, shortcut_link: Path) -> None:
-  shortcut = win32com.client.Dispatch("WScript.Shell").CreateShortcut(shortcut_link)
+  shortcut = win32com.client.Dispatch("WScript.Shell").CreateShortcut(str(shortcut_link))
   shortcut.Targetpath = str(cfg_path)
   shortcut.WorkingDirectory = str(setup_path)
   shortcut.IconLocation = str(cfg_path)
@@ -118,6 +118,8 @@ def parse_selection(install_list: list) -> list:
     # Check for 'Enter' to finish selection
     if selection == '':
       break
+    elif selection == f'{len(install_list) + 1}':
+      return [int(i + 1) for i in range(len(install_list))]
 
     # Convert selection to integer and validate
     try:
