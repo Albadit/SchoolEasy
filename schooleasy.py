@@ -1,10 +1,32 @@
+import psutil
 import openai
 import keyboard
 import pyperclip
+
 import configparser
 import tkinter as tk
-import subprocess
 import sys
+import os
+
+
+def is_running() -> bool:
+  current_pid = os.getpid()
+  parent_pid = os.getppid()
+  file_name = os.path.basename(sys.argv[0])
+
+  process_list = []
+  for proc in psutil.process_iter(['pid', 'name']):
+    try:
+      process_info = proc.info
+      if process_info['name'] == file_name and not (process_info['pid'] == current_pid or process_info['pid'] == parent_pid) :
+        process_list.append(process_info)
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+      pass
+
+  if process_list:
+    return True
+  else:
+    return False
 
 def load_config(config_file: str) -> configparser.ConfigParser:
   # Load the configuration file.
@@ -71,6 +93,9 @@ def on_key_event(e: keyboard.KeyboardEvent) -> None:
       display_window(response)
 
 if __name__ == "__main__":
+  if is_running():
+    sys.exit()
+  
   config = load_config('config.cfg')
   openai.api_key = config["Api"]["OpenAiKey"]
 
