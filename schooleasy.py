@@ -81,7 +81,7 @@ def generate_response(message: str) -> str:
 def on_key_event(e: keyboard.KeyboardEvent) -> None:
   # Handle the key event.
   global config
-  
+
   key_values = [value for value in config['Keys'].values()]
   if e.event_type == keyboard.KEY_DOWN and e.name in key_values:
     config = load_config('config.cfg')
