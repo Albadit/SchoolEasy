@@ -4,12 +4,32 @@ from pathlib import Path
 import win32com.client
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
+import os
 
-def create_config(config_file_path: Path, settings: dict) -> None:
+def generate_config(config_path: Path, file_name: str) -> None:
+  settings = {
+    'Api': {
+      'OpenAiKey': '',
+    },
+    'Settings': {
+      'PopTimer': '3000',
+      'PopPosition': '+300+200',
+      'PopOpacity': '0.5',
+      'Model': 'gpt-4',
+      'PromptSystem': 'You are a helpful assistant specialized in answering multiple-choice questions.',
+      'PromptUser': 'Give me only the correct answer and nothing else:',
+    },
+    'Keys': {
+      'KeyWrite': '`',
+      'KeyPop': '~',
+    }
+  }
+
   contents = '\n'.join(f'[{section}]\n' + '\n'.join(f'{k} = {v}' for k, v in options.items()) + '\n' for section, options in settings.items())
-  config_file_path.write_text(contents)
+  Path(config_path / file_name).write_text(contents)
+  print(f'{file_name} has been Generate.')
 
-def generate_xml_content(setup_path: Path, config_file_path: Path, file_name: str) -> None:
+def generate_xml(setup_path: Path, file_name: str) -> None:
   task = Element('Task', {'version': '1.2', 'xmlns': 'http://schemas.microsoft.com/windows/2004/02/mit/task'})
 
   # RegistrationInfo
@@ -65,7 +85,60 @@ def generate_xml_content(setup_path: Path, config_file_path: Path, file_name: st
 
   xml_str_finish = xml_str.replace('<?xml version="1.0" ?>', '<?xml version="1.0" encoding="UTF-16"?>')
   
-  config_file_path.write_text(xml_str_finish, encoding='utf-16')
+  Path(setup_path / file_name).write_text(xml_str_finish, encoding='utf-16')
+  print(f'{file_name} has been Generate.')
+
+def download_exe(setup_path: Path) -> None:
+  url = 'https://raw.githubusercontent.com/Albadit/SchoolEasy/main/app/SchoolEasy.exe'
+  cfg_path = Path(setup_path / Path(url).name)
+  urllib.request.urlretrieve(url, cfg_path)
+  print(f'{Path(url).name} has been downloaded.')
+
+def create_shortcut(setup_path: Path, cfg_path: Path, shortcut_link: Path) -> None:
+  shortcut = win32com.client.Dispatch("WScript.Shell").CreateShortcut(shortcut_link)
+  shortcut.Targetpath = str(cfg_path)
+  shortcut.WorkingDirectory = str(setup_path)
+  shortcut.IconLocation = str(cfg_path)
+  shortcut.save()
+  print('Shorcut has been created.')
+
+def parse_selection(install_list: list) -> list:
+  selected_indices = []
+
+  while True:
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("Select the components to install/reinstall:")
+    for i, item in enumerate(install_list):
+      print(f"{i + 1}. {item}")
+    print(f"{len(install_list) + 1}. All")
+    print("Selected:", ", ".join(selected_indices))
+
+    selection = input("Enter your choice (e.g., 1, 3-4, 5 for all, Press enter if you're done): ")
+
+    # Check for 'Enter' to finish selection
+    if selection == '':
+      break
+
+    # Convert selection to integer and validate
+    try:
+      selection_int = int(selection)
+      if selection_int < 1 or selection_int > len(install_list) + 2:
+        print("Invalid selection. Please enter a valid number.")
+        input("Press Enter to continue...")
+        continue
+    except ValueError:
+      print("Invalid input. Please enter a number.")
+      input("Press Enter to continue...")
+      continue
+
+    # Handle addition or removal of selection
+    if selection in selected_indices:
+      selected_indices.remove(selection)
+    else:
+      selected_indices.append(selection)
+
+  # Converting selected_indices to integers and sorting
+  return sorted([int(idx) for idx in selected_indices])
 
 def setup_config_folder() -> None:
   key_path = r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
@@ -78,40 +151,37 @@ def setup_config_folder() -> None:
   
   setup_path = Path(paths["Personal"], 'SchoolEasy')
 
-  settings = {
-    'Api': {
-      'OpenAiKey': ''
-    },
-    'Settings': {
-      'PopTimer': '3000',
-      'PopPosition': '+300+200',
-      'PopOpacity': '0.5',
-      'Model': 'gpt-4',
-      'PromptSystem': 'You are a helpful assistant specialized in answering multiple-choice questions.',
-      'PromptUser': 'Give me only the correct answer and nothing else:',
-      'KeyWrite': '`',
-      'KeyPop': '~',
-    }
-  }
+  if setup_path.exists():
+    context = "The setup path already exists. Do you want to install/reinstall components (y/n): "
+    user_input = input(context).strip().lower()
+    while user_input not in ['no', 'n' , 'yes', 'y']:
+      os.system('cls')
+      user_input = input('Please select this two options (y/n): ').strip().lower()
+      if user_input == ['no', 'n']:
+        return
+
+  install_list = ["Generate config", "Generate xml", "Download exe", "Create shortcut"]
+  selected_index = parse_selection(install_list)
 
   setup_path.mkdir(parents=True, exist_ok=True)
-  # (setup_path / 'main').mkdir(exist_ok=True)
 
-  create_config(setup_path / "config.cfg", settings)
-  generate_xml_content(setup_path, setup_path / "schooleasy.xml", "schooleasy.xml")
-  
-  # Download practice config
-  # releases/latest
-  url = 'https://raw.githubusercontent.com/Albadit/SchoolEasy/main/app/SchoolEasy.exe'
-  practice_cfg_path = setup_path / Path(url).name
-  urllib.request.urlretrieve(url, practice_cfg_path)
+  if 1 in selected_index:
+    generate_config(setup_path, "config.cfg")
+  if 2 in selected_index:
+    generate_xml(setup_path, "schooleasy.xml")
+  if 3 in selected_index:
+    download_exe(setup_path)
+  if 4 in selected_index:
+    cfg_path = Path(setup_path / "SchoolEasy.exe")
+    if cfg_path.exists():
+      create_shortcut(setup_path, cfg_path, Path(paths["Desktop"], "School Easy.lnk"))
 
-  # Create desktop shortcut
-  shortcut = win32com.client.Dispatch("WScript.Shell").CreateShortcut(str(Path(paths["Desktop"], "School Easy.lnk")))
-  shortcut.Targetpath = str(practice_cfg_path)
-  shortcut.WorkingDirectory = str(setup_path)
-  shortcut.IconLocation = str(practice_cfg_path)
-  shortcut.save()
+  # generate_config(setup_path / "config.cfg")
+  # generate_xml(setup_path, "schooleasy.xml")
+  # cfg_path = download_exe(setup_path)
+  # create_shortcut(setup_path, cfg_path, Path(paths["Desktop"], "School Easy.lnk"))
 
 if __name__ == "__main__":
   setup_config_folder()
+  print("Your setup is done. You're ready to go.")
+  input("Press Enter to continue...")
