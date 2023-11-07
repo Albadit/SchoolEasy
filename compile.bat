@@ -10,7 +10,7 @@ SET "scriptFileName=SchoolEasy"
 SET "xmlFile=%currentDir%\task_scheduler\%scriptFileName%.xml"
 
 :: List of packages to check
-SET "packages=pyinstaller openai keyboard pyperclip"
+SET "packages=pyinstaller psutil openai keyboard pyperclip"
 
 :: Define your new paths
 SET "newCommandPath=%currentDir%\dist\%scriptFileName%.exe"
@@ -46,7 +46,7 @@ echo Do you want to compile the Python script to an executable? [Y/N]
 choice /C YN /M "Press Y to confirm or N to cancel:"
 if %ERRORLEVEL% equ 1 (
   echo Compiling the Python script to .exe...
-  pyinstaller --noconfirm --onefile --noconsole --add-data "config.cfg;." --icon=src\app_icon.ico --hidden-import openai --hidden-import keyboard --hidden-import pyperclip %scriptFileName%.py
+  pyinstaller --noconfirm --onefile --noconsole --add-data "config.cfg;." --icon=src\app_icon.ico --hidden-import psutil --hidden-import openai --hidden-import keyboard --hidden-import pyperclip %scriptFileName%.py
   pyinstaller --noconfirm --onefile --icon=src\app_icon.ico %scriptFileName%_installer.py
 
   :: Copy config.conf in the dist
