@@ -55,7 +55,7 @@ def generate_xml(setup_path: Path, file_name: str) -> None:
   # Settings
   settings = SubElement(task, 'Settings')
   settings_dict = {
-    'MultipleInstancesPolicy': 'Queue', 'DisallowStartIfOnBatteries': 'false',
+    'MultipleInstancesPolicy': 'IgnoreNew', 'DisallowStartIfOnBatteries': 'false',
     'StopIfGoingOnBatteries': 'false', 'AllowHardTerminate': 'false',
     'StartWhenAvailable': 'true', 'RunOnlyIfNetworkAvailable': 'false',
     'AllowStartOnDemand': 'true', 'Enabled': 'true', 'Hidden': 'false',

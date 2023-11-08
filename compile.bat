@@ -6,8 +6,6 @@ SET "currentDir=%~dp0"
 :: Remove the trailing backslash for consistency in path
 SET "currentDir=%currentDir:~0,-1%"
 SET "scriptFileName=SchoolEasy"
-:: The path of schooleasy.xml
-SET "xmlFile=%currentDir%\task_scheduler\%scriptFileName%.xml"
 
 :: List of packages to check
 SET "packages=pyinstaller psutil openai keyboard pyperclip"
@@ -54,11 +52,6 @@ if %ERRORLEVEL% equ 1 (
 ) else (
   echo Compilation cancelled by user.
 )
-
-:: Use PowerShell to replace the specific lines in the XML file
-powershell -Command "(Get-Content '%xmlFile%') -replace '<Command>.*</Command>', '<Command>%newCommandPath%</Command>' -replace '<Arguments>.*</Arguments>', '<Arguments>%newArgumentsPath%</Arguments>' -replace '<WorkingDirectory>.*</WorkingDirectory>', '<WorkingDirectory>%newWorkingDirectory%</WorkingDirectory>' | Set-Content '%xmlFile%'"
-
-echo The XML file have been updated successfully.
 
 pause
 exit
