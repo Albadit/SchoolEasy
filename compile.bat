@@ -12,8 +12,8 @@ SET "packages=pyinstaller psutil openai keyboard pyperclip"
 
 :: Define your new paths
 SET "newCommandPath=%currentDir%\dist\%scriptFileName%.exe"
-SET "newArgumentsPath=%currentDir%\dist\config.cfg"
 SET "newWorkingDirectory=%currentDir%\dist"
+SET "appPath=%currentDir%\app"
 
 :: Check python version
 python --version >nul 2>&1
@@ -48,7 +48,8 @@ if %ERRORLEVEL% equ 1 (
   pyinstaller --noconfirm --onefile --icon=src\app_icon.ico %scriptFileName%_installer.py
 
   :: Copy config.conf in the dist
-  COPY "%currentDir%\config.cfg" "%newWorkingDirectory%"
+  COPY "%newWorkingDirectory%\SchoolEasy.exe" "%appPath%"
+  COPY "%newWorkingDirectory%\SchoolEasy_installer.exe" "%appPath%"
 ) else (
   echo Compilation cancelled by user.
 )

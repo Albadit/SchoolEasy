@@ -8,6 +8,7 @@ import tkinter as tk
 import sys
 import os
 
+latest = ""
 
 def is_running() -> bool:
   current_pid = os.getpid()
@@ -80,17 +81,18 @@ def generate_response(message: str) -> str:
 
 def on_key_event(e: keyboard.KeyboardEvent) -> None:
   # Handle the key event.
-  global config
+  global config, latest
 
   key_values = [value for value in config['Keys'].values()]
   if e.event_type == keyboard.KEY_DOWN and e.name in key_values:
     config = load_config('config.cfg')
     copied_text = pyperclip.paste()
     response = generate_response(copied_text)
-    if e.name == config["Keys"]["KeyWrite"]:
-      keyboard.write(response)
-    elif e.name == config["Keys"]["KeyPop"]:
+    if e.name == config["Keys"]["KeyPop"]:
+      latest = response
       display_window(response)
+    elif e.name == config["Keys"]["KeyRepop"]:
+      display_window(latest)
 
 if __name__ == "__main__":
   if is_running():

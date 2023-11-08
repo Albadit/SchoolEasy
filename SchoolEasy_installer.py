@@ -20,8 +20,8 @@ def generate_config(config_path: Path, file_name: str) -> None:
       'PromptUser': 'Give me only the correct answer and nothing else:',
     },
     'Keys': {
-      'KeyWrite': '`',
       'KeyPop': '~',
+      'KeyRepop': '`',
     }
   }
 
@@ -129,11 +129,11 @@ def parse_selection(install_list: list) -> list:
       selection_int = int(selection)
       if selection_int < 1 or selection_int > len(install_list) + 2:
         print("Invalid selection. Please enter a valid number.")
-        input("Press Enter to continue...")
+        input(exit_text)
         continue
     except ValueError:
       print("Invalid input. Please enter a number.")
-      input("Press Enter to continue...")
+      input(exit_text)
       continue
 
     # Handle addition or removal of selection
@@ -189,6 +189,7 @@ def setup_config_folder() -> None:
   # create_shortcut(setup_path, cfg_path, Path(paths["Desktop"], "School Easy.lnk"))
 
 if __name__ == "__main__":
+  exit_text = "Press Enter to continue..."
   setup_config_folder()
   print("Your setup is done. You're ready to go.")
-  input("Press Enter to continue...")
+  input(exit_text)

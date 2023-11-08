@@ -24,44 +24,21 @@ Before installing Python, ensure that your Windows operating system is up to dat
 
 6. Choose between the 32-bit and 64-bit versions based on your version of Windows. If you are unsure which version to choose, right-click on 'This PC' or 'My Computer' on your desktop or File Explorer, and select 'Properties' to see your system type.
 
-### Installing Python
-
-1. Locate the downloaded executable file (It will be named something like `python-3.x.x.exe` where `3.x.x` is the version number) and double-click it to start the installer.
-
-2. Ensure you check the box that says "Add Python 3.x to PATH" before you click "Install Now". This will make it easier to run Python from the Command Prompt.
-
-3. The installer will display the installation progress. Wait for it to complete.
-
-4. Once the installation is successful, you will see a screen that says "Setup was successful". Click "Close" to finish the installation process.
-
 
 ### Additional Packages Installation
 <ul>
-After installing Python, you may need additional packages for your specific project. `pyperclip`, `keyboard`, and `openai` are common packages that you may find useful. Here's how to install them on Windows.
-
-#### Installing pip
-
-`pip` is Python's package installer. It's supposed to come with Python, but if for some reason it's not available, you can install it by downloading `get-pip.py`:
-
-1. Download `get-pip.py` to a folder on your computer.
-2. Open a command prompt and navigate to the folder containing `get-pip.py`.
-3. Run the following command:
-
-```
-python get-pip.py
-```
-
-Pip will be installed, and you'll be able to use it to install other Python packages.
+After installing Python, you may need additional packages for your specific project. `pyperclip`, `keyboard`, `openai` and `psutil` are common packages that you may find useful. Here's how to install them on Windows.
 
 #### Installing pyperclip, keyboard, and openai
 
-With `pip` installed, you can install the `pyperclip`, `keyboard`, and `openai` packages using the following commands in your Command Prompt:
+With `pip` installed, you can install the `pyperclip`, `keyboard`, `openai` and `psutil` packages using the following commands in your Command Prompt:
 
 ```
 pip install configparser
 pip install pyperclip
 pip install keyboard
 pip install openai
+pip install psutil
 ```
 </ul>
 
