@@ -96,7 +96,7 @@ def on_key_event(e: keyboard.KeyboardEvent) -> None:
 
 if __name__ == "__main__":
   if is_running():
-    sys.exit()
+    sys.exit(0)
   
   config = load_config('config.cfg')
   openai.api_key = config["Api"]["OpenAiKey"]

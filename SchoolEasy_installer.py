@@ -2,11 +2,18 @@ import winreg
 import urllib.request
 from pathlib import Path
 import win32com.client
-from xml.etree.ElementTree import Element, SubElement, tostring
-from xml.dom import minidom
+import ctypes
 import os
+import sys
 
-def generate_config(config_path: Path, file_name: str) -> None:
+def is_admin():
+  """Check if the script is running with administrative privileges."""
+  try:
+    return ctypes.windll.shell32.IsUserAnAdmin()
+  except:
+    return False
+
+def create_config(config_path: Path, file_name: str) -> None:
   settings = {
     'Api': {
       'OpenAiKey': '',
@@ -29,64 +36,70 @@ def generate_config(config_path: Path, file_name: str) -> None:
   Path(config_path / file_name).write_text(contents)
   print(f'{file_name} has been Generate.')
 
-def generate_xml(setup_path: Path, file_name: str) -> None:
-  task = Element('Task', {'version': '1.2', 'xmlns': 'http://schemas.microsoft.com/windows/2004/02/mit/task'})
+def task_scheduler(setup_path: Path) -> None:
+  # Connect to the Task Scheduler
+  scheduler = win32com.client.Dispatch('Schedule.Service')
+  scheduler.Connect()
+  root_folder = scheduler.GetFolder('\\')
 
-  # RegistrationInfo
-  registration_info = SubElement(task, 'RegistrationInfo')
-  SubElement(registration_info, 'Author').text = 'SchoolEasy'
-  SubElement(registration_info, 'URI').text = '\\SchoolEasy'
+  # Create a new task definition
+  task_def = scheduler.NewTask(0)
 
-  # Triggers
-  triggers = SubElement(task, 'Triggers')
-  for i, trigger_type in enumerate(['BootTrigger', 'LogonTrigger', 'SessionStateChangeTrigger', 'IdleTrigger', 'SessionStateChangeTrigger']):
-    trigger = SubElement(triggers, trigger_type)
-    SubElement(trigger, 'Enabled').text = 'true'
-    if trigger_type == 'SessionStateChangeTrigger':
-      state_change_text = 'SessionUnlock' if i == 2 else 'ConsoleConnect'
-      SubElement(trigger, 'StateChange').text = state_change_text
+  # Set registration info
+  task_def.RegistrationInfo.Description = 'SchoolEasy Task'
+  task_def.RegistrationInfo.Author = 'SchoolEasy'
 
-  # Principals
-  principals = SubElement(task, 'Principals')
-  principal = SubElement(principals, 'Principal', {'id': 'Author'})
-  SubElement(principal, 'LogonType').text = 'InteractiveToken'
-  SubElement(principal, 'RunLevel').text = 'HighestAvailable'
+  # Create Triggers
+  # Boot Trigger
+  task_def.Triggers.Create(8)  # 8 = Boot Trigger
 
-  # Settings
-  settings = SubElement(task, 'Settings')
-  settings_dict = {
-    'MultipleInstancesPolicy': 'IgnoreNew', 'DisallowStartIfOnBatteries': 'false',
-    'StopIfGoingOnBatteries': 'false', 'AllowHardTerminate': 'false',
-    'StartWhenAvailable': 'true', 'RunOnlyIfNetworkAvailable': 'false',
-    'AllowStartOnDemand': 'true', 'Enabled': 'true', 'Hidden': 'false',
-    'RunOnlyIfIdle': 'false', 'WakeToRun': 'true', 'ExecutionTimeLimit': 'P1D',
-    'Priority': '7'
-  }
-  for key, value in settings_dict.items():
-    SubElement(settings, key).text = value
+  # Logon Trigger
+  task_def.Triggers.Create(9)  # 9 = Logon Trigger
 
-  idle_settings = SubElement(settings, 'IdleSettings')
-  SubElement(idle_settings, 'StopOnIdleEnd').text = 'true'
-  SubElement(idle_settings, 'RestartOnIdle').text = 'false'
+  # Session State Change Trigger for Session Unlock
+  session_unlock_trigger = task_def.Triggers.Create(11)  # 11 = Session State Change Trigger
+  session_unlock_trigger.StateChange = 8  # 8 = Session unlock
 
-  restart_on_failure = SubElement(settings, 'RestartOnFailure')
-  SubElement(restart_on_failure, 'Interval').text = 'PT1M'
-  SubElement(restart_on_failure, 'Count').text = '10'
+  # Idle Trigger
+  task_def.Triggers.Create(6)  # 6 = Idle Trigger
 
-  # Actions
-  actions = SubElement(task, 'Actions', {'Context': 'Author'})
-  exec_element = SubElement(actions, 'Exec')
-  SubElement(exec_element, 'Command').text = f'{setup_path}\\SchoolEasy.exe'
-  SubElement(exec_element, 'Arguments').text = f'{setup_path}\\config.cfg'
-  SubElement(exec_element, 'WorkingDirectory').text = f'{setup_path}'
+  # Session State Change Trigger for Console Connect
+  console_connect_trigger = task_def.Triggers.Create(11)  # Reusing 11 for a different session state change
+  console_connect_trigger.StateChange = 4  # 4 = Console connect
 
-  # Pretty print the XML
-  xml_str = minidom.parseString(tostring(task)).toprettyxml(indent="  ")
+  # Set the principal for the task
+  task_def.Principal.LogonType = 3  # 3 = Interactive Token
+  task_def.Principal.RunLevel = 1   # 1 = Highest Available
 
-  xml_str_finish = xml_str.replace('<?xml version="1.0" ?>', '<?xml version="1.0" encoding="UTF-16"?>')
-  
-  Path(setup_path / file_name).write_text(xml_str_finish, encoding='utf-16')
-  print(f'{file_name} has been Generate.')
+  # Set task settings
+  settings = task_def.Settings
+  settings.MultipleInstances = 2  # 2 = Ignore New
+  settings.DisallowStartIfOnBatteries = False
+  settings.StopIfGoingOnBatteries = False
+  settings.AllowHardTerminate = False
+  settings.StartWhenAvailable = True
+  settings.RunOnlyIfNetworkAvailable = False
+  settings.Enabled = True
+  settings.Hidden = False
+  settings.RunOnlyIfIdle = False
+  settings.WakeToRun = True
+  settings.ExecutionTimeLimit = "P1D"  # Period of one day
+  settings.Priority = 7
+
+  # Idle settings
+  settings.IdleSettings.StopOnIdleEnd = True
+  settings.IdleSettings.RestartOnIdle = False
+
+  # Set an action
+  action = task_def.Actions.Create(0)  # 0 = Execute
+  action.Path = f'{setup_path}\\SchoolEasy.exe'
+  action.Arguments = f'{setup_path}\\config.cfg'
+  action.WorkingDirectory = f'{setup_path}' 
+
+  # Register the task
+  task_name = '\\SchoolEasy'
+  root_folder.RegisterTaskDefinition(task_name, task_def, 6, '', '', 3)  # 6 = CreateOrUpdate, 3 = TaskLogonType.InteractiveToken
+  print('Task Scheduler has been created.')
 
 def download_exe(setup_path: Path) -> None:
   try:
@@ -94,8 +107,8 @@ def download_exe(setup_path: Path) -> None:
     cfg_path = Path(setup_path / Path(url).name)
     urllib.request.urlretrieve(url, cfg_path)
     print(f'{Path(url).name} has been downloaded.')
-  except: 
-    print(f"Error: You can't install or reinstall the .exe file while it is running. Stop the program before installing.")
+  except Exception as e: 
+    print(e)
 
 def create_shortcut(setup_path: Path, cfg_path: Path, shortcut_link: Path) -> None:
   shortcut = win32com.client.Dispatch("WScript.Shell").CreateShortcut(str(shortcut_link))
@@ -145,7 +158,7 @@ def parse_selection(install_list: list) -> list:
   # Converting selected_indices to integers and sorting
   return sorted([int(idx) for idx in selected_indices])
 
-def setup_config_folder() -> None:
+def setup() -> None:
   key_path = r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
   try:
     with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path) as key:
@@ -156,7 +169,7 @@ def setup_config_folder() -> None:
   
   setup_path = Path(paths["Personal"], 'SchoolEasy')
 
-  install_list = ["Generate config", "Generate xml", "Download exe", "Create shortcut"]
+  install_list = ["Download exe", "Generate config", "Scheduler Tasks", "Create shortcut"]
 
   if setup_path.exists():
     context = "The setup path already exists. Do you want to install/reinstall components (y/n): "
@@ -173,23 +186,27 @@ def setup_config_folder() -> None:
   setup_path.mkdir(parents=True, exist_ok=True)
 
   if 1 in selected_index:
-    generate_config(setup_path, "config.cfg")
-  if 2 in selected_index:
-    generate_xml(setup_path, "schooleasy.xml")
-  if 3 in selected_index:
     download_exe(setup_path)
+  if 2 in selected_index:
+    create_config(setup_path, "config.cfg")
+  if 3 in selected_index:
+    task_scheduler(setup_path)
   if 4 in selected_index:
     cfg_path = Path(setup_path / "SchoolEasy.exe")
     if cfg_path.exists():
       create_shortcut(setup_path, cfg_path, Path(paths["Desktop"], "School Easy.lnk"))
 
   # generate_config(setup_path / "config.cfg")
-  # generate_xml(setup_path, "schooleasy.xml")
+  # task_scheduler(setup_path)
   # cfg_path = download_exe(setup_path)
   # create_shortcut(setup_path, cfg_path, Path(paths["Desktop"], "School Easy.lnk"))
 
 if __name__ == "__main__":
+  if not is_admin():
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+    sys.exit(0)
+
   exit_text = "Press Enter to continue..."
-  setup_config_folder()
+  setup()
   print("Your setup is done. You're ready to go.")
   input(exit_text)
